@@ -1,0 +1,33 @@
+nest new (proyectname)  -- iniciar proyecto (usar node lts para evitar errores de compaivilidad)
+
+
+npm install @nestjs/config -- variables de entorno
+
+npm install @nestjs/typeorm typeorm mysql2  -- base de datos
+
+npm install class-validator class-transformer  -- para las validaciones de los dtos
+
+npm install @nestjs/jwt @nestjs/passport passport passport-jwt  -- para el token
+
+npm install bcrypt -- hashing
+
+npm install @nestjs/swagger swagger-ui-express  --swagger para las rutas en una pagina base,
+
+npm install -D @types/bcrypt @types/passport-jwt  -- es necesario tambien
+
+
+nest g resource tabla --crear todo
+
+en package json:
+"migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts",
+"migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
+"migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts"
+
+encender docker:
+sudo systemctl start docker
+docker compose up -d nombre_del_servicio
+
+docker ps -a
+docker compose config --services
+
+sudo docker compose up -d
