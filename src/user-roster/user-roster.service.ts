@@ -93,19 +93,25 @@ export class UserRosterService {
     }
   } //final  del create
 
-  async findAll(userId: number) {
-    return this.rosterRepository.find({
-      where: {
-        user:{
-            id: userId,
-        },
-        status: Status.ACTIVE
-      },
-      relations: {
-        character: true,
-      },
-    })
-  }
+
+
+      async findAll(userId: number) {
+        return this.rosterRepository.find({
+          where: {
+            user: {
+              id: userId,
+            },
+            status: Status.ACTIVE,
+          },
+          relations: {
+            character: true,
+          },
+          order: {
+            main: 'DESC',
+          },
+        });
+      }
+
 
   async findOne(id: number,  userId: number) {
     

@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
 import { GamesService } from './games.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
+import { FindAllDto } from './dto/findAll.dto';
 
 @Controller('games')
 export class GamesController {
@@ -20,8 +22,9 @@ export class GamesController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get()
-  findAll(@Req() request: Request & {user: any})  {
-    return this.gamesService.findAll(request.user.id);
+  findAll(@Req() request: Request & {user: any},
+          @Query() findAllDto: FindAllDto)  {
+    return this.gamesService.findAll(request.user.id, findAllDto);
   }
 
   @UseGuards(JwtAuthGuard)

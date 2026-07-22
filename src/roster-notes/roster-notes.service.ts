@@ -6,13 +6,16 @@ import { RosterNote } from './entities/roster-note.entity';
 import { Repository } from 'typeorm';
 import { SearchRosterNote } from './dto/search-roster-note.dto';
 import { find } from 'rxjs';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
+import { UserRosterService } from 'src/user-roster/user-roster.service';
 
 @Injectable()
 export class RosterNotesService {
 
   constructor(
     @InjectRepository(RosterNote)
-    private readonly rosterNoteRepository: Repository<RosterNote>
+    private readonly rosterNoteRepository: Repository<RosterNote>,
+    private readonly userRosterService: UserRosterService
   ){}
 
   create(createRosterNoteDto: CreateRosterNoteDto, rosterId: number) {
@@ -52,15 +55,33 @@ export class RosterNotesService {
     return query.getMany();
   }
 
-  findAllPublic(rosterId: number) {
-    return this.rosterNoteRepository.find({
+  async findAllPublic(rosterId: number, paginationQuery: PaginationQueryDto, userId: number) {
+
+    const { page, limit } = paginationQuery;
+
+    const roster = await this.userRosterService.findOne(rosterId, userId);
+
+    const [notes, total] = await this.rosterNoteRepository.findAndCount({
       where: {
         userRoster: {
-          id: rosterId
+          character: {
+            id: roster.character.id
+          }
         },
         is_public: true
-      }
+      },
+      skip: (page - 1) * limit,
+      take: limit,
     })
+
+    return   {
+    data: notes,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+    };
+
   }
 
   async findOne(id: number) {

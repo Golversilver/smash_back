@@ -14,7 +14,7 @@ export class WinRateDinamic {
 
       @IsOptional()
       @IsNumber()
-      characterUserId!: number;
+      userRosterId!: number;
 
       @IsOptional()
       @IsNumber()

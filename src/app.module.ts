@@ -30,6 +30,7 @@ import { MatchRosterValidationService } from './common/services/match-roster-val
         database: configService.get('DB_NAME'),
         autoLoadEntities: true,
         synchronize: false,
+          timezone: 'Z',
     })
   }),
   StagesModule,

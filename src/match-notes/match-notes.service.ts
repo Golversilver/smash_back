@@ -6,6 +6,9 @@ import { MatchNote } from './entities/match-note.entity';
 import { Repository } from 'typeorm';
 import { SearchMatchNote } from './dto/search-match-note.dto';
 import { MatchRosterValidationService } from 'src/common/services/match-roster-validation/match-roster-validation.service';
+import { MatchsService } from 'src/matchs/matchs.service';
+import { UserRosterService } from 'src/user-roster/user-roster.service';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class MatchNotesService {
@@ -13,46 +16,70 @@ export class MatchNotesService {
   constructor(
     @InjectRepository(MatchNote)
     private readonly matchNoteRepository: Repository<MatchNote>,
-    private readonly matchRosterValidationService: MatchRosterValidationService
+    private readonly matchRosterValidationService: MatchRosterValidationService,
+    private readonly matchsService: MatchsService,
+    private readonly userRosterService: UserRosterService,
   ){}
 
-  async create(createMatchNoteDto: CreateMatchNoteDto , matchId: number, rosterId:  number, userId: number) {
+  async create(createMatchNoteDto: CreateMatchNoteDto , rivalId: number, rosterId:  number, userId: number) {
 
-    const valid = await this.matchRosterValidationService.ensureSameCharacter(matchId, rosterId, userId);
+    const roster = await this.userRosterService.findOne(rosterId, userId);
 
-    if(!valid){
-      throw new BadRequestException('El personaje del roster no participa en el match.')
-    }
+    const match = await this.matchsService.searchMatch(roster.character.id, rivalId);
      
     const RosterNote = this.matchNoteRepository.create({
-      ...createMatchNoteDto,
-      userRoster: {
-        id: rosterId
-      },
-      match:{
-        id: matchId
-      }
-    })
+       ...createMatchNoteDto,
+       userRoster: {
+       id: rosterId
+     },
+       match:{
+        id: match.id
+       }
+     })
 
-    return this.matchNoteRepository.save(RosterNote);
+     return this.matchNoteRepository.save(RosterNote);
   }
 
-  findAllPublic(matchId: number, rosterId: number) {
-    return this.matchNoteRepository.find({
+  async findAllPublic(rivalId: number, rosterId: number, userId: number, paginationQuery: PaginationQueryDto) {
+
+    const { page, limit } = paginationQuery;
+
+    const roster = await this.userRosterService.findOne(rosterId, userId);
+
+    const match = await this.matchsService.searchMatch(roster.character.id, rivalId);
+
+     const [notes, total] = await this.matchNoteRepository.findAndCount({
       where:{
         match: {
-          id: matchId
+          id: match.id
         },
         userRoster: {
-          id: rosterId
+          character: {
+            id: roster.character.id
+          }
         },
-      is_public: true 
-      }
+      is_public: true,
+      },
+
+      skip: (page - 1) * limit,
+      take: limit,
     })
+
+    return {
+    data: notes,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+    };
   }
 
 
-  findAll(searchMatchNote: SearchMatchNote ,matchId: number, rosterId: number,  userId: number) {
+  async findAll(searchMatchNote: SearchMatchNote, rivalId: number, rosterId: number,  userId: number) {
+
+    const roster = await this.userRosterService.findOne(rosterId, userId);
+
+    const match = await this.matchsService.searchMatch(roster.character.id, rivalId);
      
     const query = this.matchNoteRepository.createQueryBuilder('matchNote')
     .leftJoin('matchNote.userRoster', 'userRoster')
@@ -60,7 +87,7 @@ export class MatchNotesService {
     .leftJoin('matchNote.match', 'match')
     .where('user.id = :userId', {userId})
     .andWhere('userRoster.id = :rosterId', {rosterId})
-    .andWhere('match.id = :matchId', { matchId });
+    .andWhere('match.id = :matchId', {  matchId: match.id });
 
     if(searchMatchNote.search){
       query.andWhere(

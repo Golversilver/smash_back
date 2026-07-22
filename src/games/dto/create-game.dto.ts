@@ -17,9 +17,6 @@ export class CreateGameDto {
     @IsInt()
     userRosterId!: number;  
 
-    @Type(() => Number)
-    @IsInt()
-    characterPlayer!: number;  
 
     @Type(() => Number)
     @IsInt()

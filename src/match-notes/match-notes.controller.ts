@@ -5,6 +5,7 @@ import { UpdateMatchNoteDto } from './dto/update-match-note.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { SearchMatchNote } from './dto/search-match-note.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 
 @Controller('match-notes')
 export class MatchNotesController {
@@ -12,30 +13,32 @@ export class MatchNotesController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Post(':matchId/roster/:rosterId')
+  @Post(':rivalId/roster/:rosterId')
   create(@Body() createMatchNoteDto: CreateMatchNoteDto,
-         @Param('matchId', ParseIntPipe) matchId:number,
+         @Param('rivalId', ParseIntPipe) rivalId:number,
          @Param('rosterId', ParseIntPipe) rosterId:number,
          @Req() request: Request & {user: any}){
-    return this.matchNotesService.create(createMatchNoteDto, matchId, rosterId, request.user.id);
+    return this.matchNotesService.create(createMatchNoteDto, rivalId, rosterId, request.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Get(':matchId/roster/:rosterId')
+  @Get(':rivalId/roster/:rosterId')
   findAll( @Query() searchMatchNote: SearchMatchNote,
-           @Param('matchId', ParseIntPipe) matchId:number,
+           @Param('rivalId', ParseIntPipe) rivalId:number,
            @Param('rosterId', ParseIntPipe) rosterId:number,
            @Req() request: Request & {user: any}) {
-    return this.matchNotesService.findAll(searchMatchNote, matchId, rosterId, request.user.id);
+    return this.matchNotesService.findAll(searchMatchNote, rivalId, rosterId, request.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Get(':matchId/roster/:rosterId/public')
-  findAllPublic( @Param('matchId', ParseIntPipe) matchId:number,
-                 @Param('rosterId', ParseIntPipe) rosterId:number) {
-    return this.matchNotesService.findAllPublic(matchId, rosterId);
+  @Get(':rivalId/roster/:rosterId/public')
+  findAllPublic( @Param('rivalId', ParseIntPipe) rivalId:number,
+                 @Param('rosterId', ParseIntPipe) rosterId:number,
+                 @Req() request: Request & {user: any},
+                  @Query() paginationQuery: PaginationQueryDto) {
+    return this.matchNotesService.findAllPublic(rivalId, rosterId, request.user.id, paginationQuery);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -50,7 +53,6 @@ export class MatchNotesController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMatchNoteDto: UpdateMatchNoteDto,
          @Req() request: Request & {user: any}) {
-
     return this.matchNotesService.update(+id, updateMatchNoteDto, request.user.id);
   }
 

@@ -4,6 +4,9 @@ import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { SearchStatsDto } from './dto/searchStats.dto';
 import { WinRateDinamic } from './dto/winRateDinamic.dto';
+import { CardsDto } from './dto/cards.dto';
+import { StagesStatsDto } from './dto/stagesStats.dto';
+import { MatchStatsDto } from './dto/matchStatsDto';
 
 @Controller('stats')
 export class StatsController {
@@ -18,13 +21,12 @@ export class StatsController {
     return this.statsService.findGames(searchStatsDto , request.user.id);
   }
 
-  @Get('stages')
+  @Post('stages')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiQuery({name: 'online',required: false,type: Boolean,description: 'Filtrar por online o presencial',})
-  findStages(@Query() searchStatsDto: SearchStatsDto,
+  findStages(@Body() stagesStatsDto: StagesStatsDto,
           @Req() request: Request & {user: any}) {
-    return this.statsService.findStages(searchStatsDto , request.user.id);
+    return this.statsService.findStages(stagesStatsDto , request.user.id);
   }
 
 
@@ -32,10 +34,10 @@ export class StatsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiQuery({name: 'online',required: false,type: Boolean,description: 'Filtrar por online o presencial',})
-  findMatchs(@Query() searchStatsDto: SearchStatsDto,
+  findMatchs(@Query() matchStatsDto: MatchStatsDto,
              @Req() request: Request & {user: any},
              @Param('rosterId') rosterId: string) {
-    return this.statsService.findMatchs(searchStatsDto , request.user.id, +rosterId);
+    return this.statsService.findMatchs(matchStatsDto , request.user.id, +rosterId);
   }
 
 
@@ -45,5 +47,14 @@ export class StatsController {
   findWinRate(@Req() request: Request & {user: any},
              @Body() WinRateDinamic: WinRateDinamic) {
     return this.statsService.findWinRate(WinRateDinamic , request.user.id);
+  }
+
+
+  @Post('cards')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  getcards(@Req() request: Request & {user: any},
+             @Body() cardsDto: CardsDto) {
+    return this.statsService.getCards(cardsDto , request.user.id);
   }
 }

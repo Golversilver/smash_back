@@ -5,6 +5,7 @@ import { UpdateRosterNoteDto } from './dto/update-roster-note.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { SearchRosterNote } from './dto/search-roster-note.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 
 @Controller('roster-notes')
 export class RosterNotesController {
@@ -31,8 +32,10 @@ export class RosterNotesController {
   @Get(':rosterId/public')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  findAllPublic(@Param('rosterId', ParseIntPipe) rosterId:number ) {
-    return this.rosterNotesService.findAllPublic(rosterId);
+  findAllPublic(@Param('rosterId', ParseIntPipe) rosterId:number,
+                @Query() paginationQuery: PaginationQueryDto,
+                @Req() request: Request & {user: any}) {
+    return this.rosterNotesService.findAllPublic(rosterId, paginationQuery, request.user.id);
   }
 
   @Get(':id')
