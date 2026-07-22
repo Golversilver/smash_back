@@ -1,0 +1,10 @@
+PORT=3000
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=golver
+DB_PASSWORD=smash123
+DB_NAME=smash_db
+
+JWT_SECRET=Smash
+JWT_EXPIRES_IN=1d
+NODE_ENV=development
